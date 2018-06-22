@@ -18,7 +18,7 @@ api.validateProduct(Product, (error, result) => {
         console.log(new Error("Product is not valid!"));
     } else if (!!result === true) {
         //create Transfers
-        api.createTransfers(Product, (err, transfersResult) => {
+        api.createTransfers(Product, VietISAddress, receiverAddress, (err, transfersResult) => {
             if (err) {
                 console.log(err);                
             } else {
@@ -28,14 +28,14 @@ api.validateProduct(Product, (error, result) => {
     }
 })
 // Request - Response Transfers and Send Transfers
-api.requestTransfers(transfers, (error, response) => {
+api.requestTransfers(transfers, receiverAddress,(error, response) => {
     if (error) {
         console.log(error);
     } else if (!!response === false) {
         console.log("Receiver reject it");
     } else if (!!response === true) {
         // Send Transfers            
-        api.sendTransfers(seedVietIS, VietISAddress, receiverAddress,transfers, (error)=>{
+        api.sendTransfers(seedVietIS,transfers, (error)=>{
             if (error) {
                 console.log(error);                
             } else {
