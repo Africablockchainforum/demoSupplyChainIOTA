@@ -27,6 +27,10 @@ function getProduct(Product, sendAddress) {
     //load all Transaction of Seed
 }
 
+API.prototype.requestTransfers = function (Product, receiverAddress, callback) {
+    
+}
+
 API.prototype.createTransfers = function (Products, senderAddress, receiverAddress, callback) {
     try {
         let message = [];        
@@ -91,8 +95,6 @@ API.prototype.createTransfers = function (Products, senderAddress, receiverAddre
     }
 }
 
-API.prototype.requestTransfers = function (Product, receiverAddress, callback) {}
-
 API.prototype.sendTransfers = function (seed, transfers, callback) {
     // create new Address
     // send init transfers
@@ -105,4 +107,10 @@ API.prototype.sendTransfers = function (seed, transfers, callback) {
         }
     })
 }
+
+API.prototype.checkTransfer = function (callback){
+    // process check status of Transfer. If all Transaction are confirm return true, other return false
+    return callback(null, true);
+}
+
 module.exports = API;
