@@ -7,18 +7,18 @@ const seedVietIS = "UVJUSYDS9TXRHBUDUOYOYDKOUNJWAVQERKGNHXGUQVTKHQYQKINDKCVEFZHU
 // Prepare Transfers    
 // Set receiver
 var receiverAddress = "";
-// Set Product
-var Product = [];
-// Validate Product and create transfer
+// Set Products
+var Products = [];
+// Validate Products and create transfer
 var transfers = [];
-api.validateProduct(Product, (error, result) => {
+api.validateProducts(Products, (error, result) => {
     if (error) {
         console.log(error);
     } else if (!!result === false) {
-        console.log(new Error("Product is not valid!"));
+        console.log(new Error("Products is not valid!"));
     } else if (!!result === true) {
         //create Transfers
-        api.createTransfers(Product, VietISAddress, receiverAddress, (err, transfersResult) => {
+        api.createTransfers(Products, VietISAddress, receiverAddress, (err, transfersResult) => {
             if (err) {
                 console.log(err);                
             } else {

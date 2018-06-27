@@ -1,6 +1,8 @@
 const IOTA = require('iota.lib.js')
 const iota = new IOTA({
-    provider: 'http://localhost:14700'
+    provider: "https://nodes.testnet.iota.org:443"
+    // provider: "https://nodes.devnet.thetangle.org:443"
+    // provider: 'http://localhost:14700'
 })
 
 const depth = 3;
@@ -8,53 +10,79 @@ const minWeightMagnitude = 9;
 
 function API() {}
 
-API.prototype.validateProduct = function (Product, sendAddress, callback) {    
+API.prototype.validateProducts = function (Products, sendAddress, callback) { 
+    try {
+        Products.forEach(element => {
+            if(getProduct(element,sendAddress)<0){
+                return callback(null,false);
+            }
+        });
+        return callback(null,true); 
+    } catch (error) {
+        return callback(error);
+    }      
 }
 
-API.prototype.createTransfers = function (data, senderAddress, receiverAddress, callback) {
-    try {
-        var messageInput = [];
-        var messageOutput = [];
-        var transfers = [];
-        var msgInput = [];
-        var msgOutput = [];
-        // create msg Object
-        for (let i = 0; i < data.length; i++) {
-            msgInput.push({
-                "type": "sell",
-                "preHash": data[i].preHash,
-                "product": data[i].product
-            })
+function getProduct(Product, sendAddress) {
+    //load all Transaction of Seed
+}
 
-            msgOutput.push({
-                "type": "buy",
-                "preHash": data[i].preHash,
-                "product": data[i].product
+API.prototype.createTransfers = function (Products, senderAddress, receiverAddress, callback) {
+    try {
+        let message = [];        
+        let transfers = [];
+        let msg = [];
+        // create transacion balace
+        let changeBalace = false;
+        let balace = [];
+            // get balace if not exist then create new balace
+            // get balace
+            //create balace
+            Products.forEach(element => {
+                if(getProduct(element,sendAddress)===0){
+                    // delete this product from balace
+                    changeBalace = true;
+                }
+            });
+        if(changeBalace){
+            transfers.push({
+                value: 0,
+                tag: iota.utils.toTrytes("BALACE"),
+                address: senderAddress,
+                message: iota.utils.toTrytes(JSON.stringify(balace))
             })
+        }       
+        
+        // create msg Object
+        for (let i = 0; i < Products.length; i++) {
+            msg.push({                
+                "preHash": Products[i].preHash,
+                "product": Products[i].product,
+                "check": "true"
+            })            
         }
 
         //create message
-        for (let i = 0; i < data.length; i++) {
-            messageInput[i] = iota.utils.toTrytes(JSON.stringify(msgInput[i]));
-            messageOutput[i] = iota.utils.toTrytes(JSON.stringify(msgOutput[i]));
+        for (let i = 0; i < Products.length; i++) {
+            message[i] = iota.utils.toTrytes(JSON.stringify(msg[i]));            
         }
 
         //push input to transfers
-        for (let index = 0; index < data.length; index++) {
+        for (let index = 0; index < Products.length; index++) {
             transfers.push({
                 value: 0,
-                tag: iota.utils.toTrytes(data[index].tag),
+                tag: iota.utils.toTrytes("SELL"),
                 address: senderAddress,
-                message: messageInput[index]
+                message: message[index]
             })
         }
         //push output to transfers
-        for (let index = 0; index < data.length; index++) {
+        for (let index = 0; index < Products.length; index++) {
             transfers.push({
                 value: 0,
-                tag: iota.utils.toTrytes(data[index].tag),
+                tag: iota.utils.toTrytes("BUY"),
                 address: receiverAddress,
-                message: messageOutput[index]
+                message: message[index]
             })
         }
         return callback(null, transfers);
