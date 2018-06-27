@@ -1,0 +1,20 @@
+<html>  
+<style type="text/css">
+body {  background-color:white;}
+body,td,th {color: #000;}
+</style>
+<script>
+function ran(){               
+var chars = "9ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+var string_length = 81;
+var randomstring = '';
+        for (var i=0; i<string_length; i++) {
+            var rnum = Math.floor(Math.random() * chars.length);
+            randomstring += chars.substring(rnum,rnum+1);
+        }return randomstring ;
+}</script>
+<div align="center"><img src="http://blog.bitfinex.com/wp-content/uploads/2017/06/iota_logo-1024x254.png" width="1024" height="254"><br>
+</div><p align="center">
+<button type="button" onClick="document.getElementById('d').innerHTML = ran()"> Generate random 81 Trytes IOTA Seed </button>
+<br><br><br><br><br><p align="center" id="d"></p>
+</html>
