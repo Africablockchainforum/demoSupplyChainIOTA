@@ -4,6 +4,11 @@ const iota = new IOTA({
     // provider: "https://nodes.devnet.thetangle.org:443"
     // provider: 'http://localhost:14700'
 })
+const READLINE = require('readline');
+const readline = READLINE.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
 
 const depth = 3;
 const minWeightMagnitude = 9;

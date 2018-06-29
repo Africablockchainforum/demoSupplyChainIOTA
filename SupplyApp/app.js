@@ -1,11 +1,5 @@
 const API = require("./api.js");
 const api = new API();
-const READLINE = require('readline');
-const readline = READLINE.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
-
 
 // Init
 // Example VietIS
