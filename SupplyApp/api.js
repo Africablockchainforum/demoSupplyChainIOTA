@@ -10,6 +10,16 @@ const minWeightMagnitude = 9;
 
 function API() { }
 
+API.prototype.getReceiverAddress = function (callback){
+    readline.question('Input Receiver Address: ', (answer) => {
+        if (iota.valid.isAddress(answer)) {
+            return callback(null, answer);
+        } else {
+            return callback(new Error("Address is Invalid"))
+        }
+    });
+}
+
 /**
  * 
  * @param {String trytes_encode} trytes 

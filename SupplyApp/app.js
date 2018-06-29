@@ -1,12 +1,27 @@
 const API = require("./api.js");
 const api = new API();
+const READLINE = require('readline');
+const readline = READLINE.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+
 
 // Init
 // Example VietIS
 const seedVietIS = "UVJUSYDS9TXRHBUDUOYOYDKOUNJWAVQERKGNHXGUQVTKHQYQKINDKCVEFZHURTSIYBLESAICFLOJ9FNGX";
+
 // Prepare Transfers    
 // Set receiver
-var receiverAddress = "";
+var receiverAddress;
+api.getReceiverAddress((error,add)=>{
+    if (error) {
+        console.log(error);    
+        process.exit(0);       
+    } else {
+        receiverAddress = add;
+    }
+})
 // Set Products
 var Products = [];
 // Validate Products and send transfer
