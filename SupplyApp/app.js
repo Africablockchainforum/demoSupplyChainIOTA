@@ -4,7 +4,6 @@ const api = new API();
 // Init
 // Example VietIS
 const seedVietIS = "UVJUSYDS9TXRHBUDUOYOYDKOUNJWAVQERKGNHXGUQVTKHQYQKINDKCVEFZHURTSIYBLESAICFLOJ9FNGX";
-
 // Prepare Transfers    
 // Set receiver
 var receiverAddress;
