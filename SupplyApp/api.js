@@ -14,7 +14,10 @@ const depth = 3;
 const minWeightMagnitude = 9;
 
 function API() { }
-
+/**
+ * method get receiver address from console and validate
+ * @param {function} callback 
+ */
 API.prototype.getReceiverAddress = function (callback){
     readline.question('Input Receiver Address: ', (answer) => {
         if (iota.valid.isAddress(answer)) {
@@ -26,7 +29,7 @@ API.prototype.getReceiverAddress = function (callback){
 }
 
 /**
- * 
+ * method convert from {trytes-code} trytes to {string} message
  * @param {String trytes_encode} trytes 
  * @returns {String} message
  */
@@ -43,6 +46,12 @@ function toMessage(trytes) {
     return iota.utils.fromTrytes(trytes.toString().substring(0, trytes.length - indexEnd));
 }
 
+/**
+ * method validate each Product by function getProduct
+ * @param {Array} Products 
+ * @param {String} sendAddress trytes-code address
+ * @param {function} callback 
+ */
 API.prototype.validateProducts = function (Products, sendAddress, callback) {
     try {
         Products.forEach(element => {
@@ -56,23 +65,60 @@ API.prototype.validateProducts = function (Products, sendAddress, callback) {
     }
 }
 
+/**
+ * method get all buy and sell amount then calculate balace. If sendAddress is not contain prehash return -1
+ * @param {Object} Product  {name,amout,etc...} product to sell
+ * @param {String} sendAddress trytes-code address 
+ * @returns {Number} balace of product in sendAddress
+ */
 function getProduct(Product, sendAddress) {
     //load all Transaction of SendAddress
+    let amountSell = 0;
+    let amountBuy = 0;
+    iota.api.findTransactionObjects({addresses:[sendAddress],tags:"SELL"},(error,data)=>{
+        if (error) {
+            console.log(error);
+        } else {
+            data.forEach(element => {                
+                let product = JSON.parse(toMessage(element.signatureMessageFragment));
+                if (product.preHash === Product.preHash) {
+                    amountSell += product.amount;
+                }                
+            });
+        }        
+    })
     iota.api.getTransactionsObjects([Product.preHash], (error, result) => {
         if (error) {
             console.log(error);
         } else {
-            productB = JSON.parse(toMessage(result.signatureMessageFragment));
-            return productB.product.amout - Product.product.amout;
+            if (result.hash !== sendAddress) {
+                return -1;
+            }
+            let product = JSON.parse(toMessage(result.signatureMessageFragment));
+            amountBuy = product.amount;
         }
 
     })
+    return amountBuy - amountSell;
 }
 
+/**
+ * method send a request to Receiver make sure that product is the same with reallife
+ * @param {Object} Product  {name,amout,etc...} product to sell
+ * @param {String} receiverAddress  trytes-code address 
+ * @param {function} callback 
+ */
 API.prototype.requestTransfers = function (Product, receiverAddress, callback) {
     return callback(null, true);
 }
 
+/**
+ * method create Transfers 
+ * @param {Object} Products     {name,amout,etc...} product to sell
+ * @param {String} senderAddress    trytes-code address
+ * @param {String} receiverAddress  trytes-code address
+ * @param {function} callback 
+ */
 API.prototype.createTransfers = function (Products, senderAddress, receiverAddress, callback) {
     try {
         let message = [];
@@ -99,7 +145,7 @@ API.prototype.createTransfers = function (Products, senderAddress, receiverAddre
                 // delete this product from balace
                 changeBalace = true;
             }
-        });     s
+        });     
         if (changeBalace) {
             transfers.push({
                 value: 0,
@@ -147,6 +193,12 @@ API.prototype.createTransfers = function (Products, senderAddress, receiverAddre
     }
 }
 
+/**
+ * method init new address and send transfer
+ * @param {String} seed     trytes-code address
+ * @param {Object} transfers  transfer to send
+ * @param {function} callback 
+ */
 API.prototype.sendTransfers = function (seed, transfers, callback) {
     // create new Address
     // send init transfers
@@ -160,9 +212,22 @@ API.prototype.sendTransfers = function (seed, transfers, callback) {
     })
 }
 
+/**
+ * method check status of transfer. If it is confirm return true
+ * @param {function} callback 
+ */
 API.prototype.checkTransfer = function (callback) {
     // process check status of Transfer. If all Transaction are confirm return true, other return false
     return callback(null, true);
+}
+
+/**
+ * method print the bill
+ * @param {Object} Products     {name,amout,etc...} product to sell
+ */
+API.prototype.printBill = function(Products){
+    console.log("Bill:");    
+    console.log(Products);    
 }
 
 module.exports = API;

@@ -5,7 +5,7 @@ const api = new API();
 // Example VietIS
 const seedVietIS = "UVJUSYDS9TXRHBUDUOYOYDKOUNJWAVQERKGNHXGUQVTKHQYQKINDKCVEFZHURTSIYBLESAICFLOJ9FNGX";
 // Prepare Transfers    
-// Set receiver
+// Get receiver
 var receiverAddress;
 api.getReceiverAddress((error,add)=>{
     if (error) {
@@ -15,7 +15,7 @@ api.getReceiverAddress((error,add)=>{
         receiverAddress = add;
     }
 })
-// Set Products
+// Get Products
 var Products = [];
 // Validate Products and send transfer
 var transfers = [];
@@ -52,9 +52,7 @@ api.validateProducts(Products, (error, result) => {
         })
     }
 })
-
 // Check result and export bill
-
 api.checkTransfer((error, result) => {
     if (error) {
         console.log(error);
