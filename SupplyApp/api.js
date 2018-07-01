@@ -164,7 +164,7 @@ API.prototype.createTransfers = function (Products, senderAddress, receiverAddre
         if (changeBalance) {
             transfers.push({
                 value: 0,
-                tag: iota.utils.toTrytes("balance"),
+                tag: iota.utils.toTrytes("BALANCE"),
                 address: senderAddress,
                 message: iota.utils.toTrytes(JSON.stringify(balance))
             })
@@ -246,6 +246,20 @@ API.prototype.checkTransfer = function (callback) {
 API.prototype.printBill = function(Products){
     console.log("Bill:");    
     console.log(Products);    
+}
+
+API.prototype.viewbalance = function (address){
+    let balance = [];
+    iota.api.findTransactionObjects({addresses:[address],tags:"BALANCE"},(error,data)=>{
+        if (error) {
+            console.log(error);
+        } else {
+            data.forEach(element => {                
+                balance = JSON.parse(toMessage(element.signatureMessageFragment));
+                getBalance() 
+            });
+        }        
+    })
 }
 
 module.exports = API;
