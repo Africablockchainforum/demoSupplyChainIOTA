@@ -29,11 +29,11 @@ api.validateProducts(Products, (error, result) => {
         api.requestTransfers(transfers, receiverAddress, (error, response) => {
             if (error) {
                 console.log(error);
-            } else if (!!response === false) {
+            } else if (!!response.status === false) {
                 console.log("Receiver reject it");
-            } else if (!!response === true) {
+            } else if (!!response.status === true) {
                 //create Transfers
-                api.createTransfers(Products, VietISAddress, receiverAddress, (err, transfersResult) => {
+                api.createTransfers(Products, VietISAddress, receiverAddress, response.data, (err, transfersResult) => {
                     if (err) {
                         console.log(err);
                     } else {
