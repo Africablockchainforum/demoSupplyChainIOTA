@@ -14,6 +14,7 @@ const seedVietIS = "UVJUSYDS9TXRHBUDUOYOYDKOUNJWAVQERKGNHXGUQVTKHQYQKINDKCVEFZHU
 readline.question("1. View Balance \n2.Send Transfer \nEnter your choose (defualt is 1): ", (answer) => {
     if (answer == "2") {
         send();
+        readline.close;
     } else {
         
     }
