@@ -47,7 +47,7 @@ function toMessage(trytes) {
 }
 
 /**
- * method validate each Product by function getProduct
+ * method validate each Product by function getBalance
  * @param {Array} Products 
  * @param {String} sendAddress trytes-code address
  * @param {function} callback 
@@ -55,7 +55,7 @@ function toMessage(trytes) {
 API.prototype.validateProducts = function (Products, sendAddress, callback) {
     try {
         Products.forEach(element => {
-            if (getProduct(element, sendAddress) < 0) {
+            if (getBalance(element, sendAddress) < 0) {
                 return callback(null, false);
             }
         });
@@ -66,12 +66,12 @@ API.prototype.validateProducts = function (Products, sendAddress, callback) {
 }
 
 /**
- * method get all buy and sell amount then calculate balace. If sendAddress is not contain prehash return -1
+ * method get all buy and sell amount then calculate balance. If sendAddress is not contain prehash return -1
  * @param {Object} Product  {name,amout,etc...} product to sell
  * @param {String} sendAddress trytes-code address 
- * @returns {Number} balace of product in sendAddress
+ * @returns {Number} balance of product in sendAddress
  */
-function getProduct(Product, sendAddress) {
+function getBalance(Product, sendAddress) {
     //load all Transaction of SendAddress
     let amountSell = 0;
     let amountBuy = 0;
@@ -109,7 +109,11 @@ function getProduct(Product, sendAddress) {
  * @param {function} callback 
  */
 API.prototype.requestTransfers = function (Product, receiverAddress, callback) {
-    return callback(null, true);
+    let response = {
+        status: true,
+        data: true
+    }
+    return callback(null, response);
 }
 
 /**
@@ -119,39 +123,50 @@ API.prototype.requestTransfers = function (Product, receiverAddress, callback) {
  * @param {String} receiverAddress  trytes-code address
  * @param {function} callback 
  */
-API.prototype.createTransfers = function (Products, senderAddress, receiverAddress, callback) {
+API.prototype.createTransfers = function (Products, senderAddress, receiverAddress, responseData, callback) {
     try {
         let message = [];
         let transfers = [];
         let msg = [];
-        // create transacion balace
-        let changeBalace = false;
-        let balace = [];
-        // get balace if not exist then create new balace
-        iota.api.findTransactionObjects({ addresses: [senderAddress], tags: [iota.utils.toTrytes("BALACE")] }, (error, txn) => {
+        // create transacion balance
+        let changeBalance = false;
+        let balance = [];
+        // get balance if not exist then create new balance
+        iota.api.findTransactionObjects({ addresses: [senderAddress], tags: [iota.utils.toTrytes("balance")] }, (error, txn) => {
             if (error) {
                 console.log(error);
             } else {
                 if (txn.length !== 0) {
-                    // get balace
+                    // get balance
+                    balance = JSON.parse(toMessage(txn.signatureMessageFragment));
                 } else {
-                    //create balace
-                                   
+                    //create balance
+                    iota.api.findTransactionObjects({addresses:[sendAddress],tags:"BUY"},(error,data)=>{
+                        if (error) {
+                            console.log(error);
+                        } else {
+                            data.forEach(element => {                
+                                balance.push(element.hash); 
+                                changeBalance = true;               
+                            });
+                        }        
+                    })
                 }
             }
         })        
         Products.forEach(element => {
-            if (getProduct(element, sendAddress) === 0) {
-                // delete this product from balace
-                changeBalace = true;
+            if (getBalance(element, sendAddress) === 0) {
+                // delete this product from balance
+                balance.splice(balance.indexOf(element.hash),1);
+                changeBalance = true;
             }
         });     
-        if (changeBalace) {
+        if (changeBalance) {
             transfers.push({
                 value: 0,
-                tag: iota.utils.toTrytes("BALACE"),
+                tag: "BALANCE",
                 address: senderAddress,
-                message: iota.utils.toTrytes(JSON.stringify(balace))
+                message: iota.utils.toTrytes(JSON.stringify(balance))
             })
         }
 
@@ -160,7 +175,7 @@ API.prototype.createTransfers = function (Products, senderAddress, receiverAddre
             msg.push({
                 "preHash": Products[i].preHash,
                 "product": Products[i].product,
-                "check": "true"
+                "response": responseData
             })
         }
 
@@ -173,7 +188,7 @@ API.prototype.createTransfers = function (Products, senderAddress, receiverAddre
         for (let index = 0; index < Products.length; index++) {
             transfers.push({
                 value: 0,
-                tag: iota.utils.toTrytes("SELL"),
+                tag: "SELL",
                 address: senderAddress,
                 message: message[index]
             })
@@ -182,7 +197,7 @@ API.prototype.createTransfers = function (Products, senderAddress, receiverAddre
         for (let index = 0; index < Products.length; index++) {
             transfers.push({
                 value: 0,
-                tag: iota.utils.toTrytes("BUY"),
+                tag: "BUY",
                 address: receiverAddress,
                 message: message[index]
             })
@@ -201,7 +216,10 @@ API.prototype.createTransfers = function (Products, senderAddress, receiverAddre
  */
 API.prototype.sendTransfers = function (seed, transfers, callback) {
     // create new Address
-    // send init transfers
+    let newAdd = ""
+    iota.api.getNewAddress(seed,{total:1},(error,address)=>{
+        newAdd = address;
+    })
     // send Transfers
     iota.api.sendTransfer(seed, depth, minWeightMagnitude, transfers, (error, success) => {
         if (error) {
@@ -228,6 +246,20 @@ API.prototype.checkTransfer = function (callback) {
 API.prototype.printBill = function(Products){
     console.log("Bill:");    
     console.log(Products);    
+}
+
+API.prototype.viewbalance = function (address){
+    let balance = [];
+    iota.api.findTransactionObjects({addresses:[address],tags:"BALANCE"},(error,data)=>{
+        if (error) {
+            console.log(error);
+        } else {
+            data.forEach(element => {                
+                balance = JSON.parse(toMessage(element.signatureMessageFragment));
+                getBalance() 
+            });
+        }        
+    })
 }
 
 module.exports = API;

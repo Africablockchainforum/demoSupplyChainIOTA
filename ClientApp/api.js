@@ -1,9 +1,30 @@
 const IOTA = require('iota.lib.js')
 const iota = new IOTA({
-    provider: 'http://localhost:14700'
+    provider: "https://nodes.testnet.iota.org:443"
+    // provider: "https://nodes.devnet.thetangle.org:443"
+    // provider: 'http://localhost:14700'
 })
 
-function API() {}
+
+var user = [
+    {
+        "Name": "Farmer A",
+        "Seed": "CRTTXMWCNEPBNTAJFPP9ZBMZLNRDIGCTAYALRLNOFFRUUMUWDFRCBDGCVJVJ9DMODBIWXQASUUK9OERBF",
+        "Address": "Z9VFFSZYU9KNJRDZVOOCFQUJELTFHRGTLSDYTQKAKQHUJMHDXMPODLVAJQGDVLRJEDOS9ZCDIJSATXAOD"
+    },
+    {
+        "Name": "Supplier B",
+        "Seed": "IRPDAMUOULBBQTZSYADCMOACCCXGCSDBXEGI9YXPAUPEYN9PIUCMWLBEGLFZDMMSSXYXKEKB9ACMGQWVE",
+        "Address": "DAI9IABCADYZEKSIQTFKHUURLRG9ZCFSCVDWOUFACMWVMUGNYDRRTRLWQDMDJYYWGWUPYXABARXMKISRD"
+    },
+    {
+        "Name": "User C",
+        "Seed": "LQGLLEPYWLSMVHV9WQROAQOPOOAALASXCFXGQFWWLKXLPKATPEHGVFZ9J9VT9JX9QK9VHMIIBWHNGWPSJ",
+        "Address": "SHMBACOMVTEGCA9XEJYTFJOVMRKPJKDFIFPIHEZZ9CBE9WQJOZTBFY9YHMVL9WYOXNDRWILDTWLIDGXXX"
+    }
+]
+
+function API() { }
 /**
  * 
  * @param {String trytes_encode} trytes 
@@ -24,6 +45,20 @@ function toMessage(trytes) {
 
 /**
  * 
+ * @param {String} address 
+ * @param {function} callback 
+ */
+function getInforAddress(address, callback) {
+    user.forEach(element => {
+        if (element.Address.indexOf(address) >= 0) {
+            console.log(element.Name);
+        }
+    });
+
+}
+
+/**
+ * 
  * @param {Hash} transactionHash 
  * @param {Array} history 
  */
@@ -34,34 +69,16 @@ function getHistory(transactionHash, history) {
             console.log(error);
         } else {
             history.push(txn[0].address);
+            getInforAddress(txn[0].address, (err, data) => {
+                console.log(err, data);
+            });
             let msg = JSON.parse(toMessage(txn[0].signatureMessageFragment));
-            history = getHistory(msg.preHash,history);
+            if (msg.preHash !== "") {
+                history = getHistory(msg.preHash, history);
+            }
         }
     })
     return history;
-}
-/**
- * 
- * @param {String} address 
- * @param {function} callback 
- */
-API.prototype.getInforAddress = function (address, callback) {
-    let addresses = {
-        "addresses": [address]
-    };
-    iota.api.findTransactionObjects(addresses, (error, txn) => {
-        if (error) {
-            return callback(error);
-        } else {
-            txn.forEach(element => {
-                let msg = JSON.parse(toMessage(element.signatureMessageFragment));
-                if (msg.type === "init") {
-                    return callback(null, msg.name + " | " + msg.address);
-                }
-            });
-            return callback(null, "Empty!")
-        }
-    })
 }
 
 /**
@@ -77,11 +94,14 @@ API.prototype.getSupply = function (transactionHash, callback) {
             return callback(error);
         } else {
             history.push(txn[0].address);
+            getInforAddress(txn[0].address, (err, data) => {
+                console.log(err, data);
+            });
             let msg = JSON.parse(toMessage(txn[0].signatureMessageFragment));
             history = getHistory(msg.preHash, history);
         }
     })
-    return callback(null,history);
+    return callback(null, history);
 }
 
 module.exports = API;
