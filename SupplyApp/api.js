@@ -164,7 +164,7 @@ API.prototype.createTransfers = function (Products, senderAddress, receiverAddre
         if (changeBalance) {
             transfers.push({
                 value: 0,
-                tag: iota.utils.toTrytes("BALANCE"),
+                tag: "BALANCE",
                 address: senderAddress,
                 message: iota.utils.toTrytes(JSON.stringify(balance))
             })
@@ -188,7 +188,7 @@ API.prototype.createTransfers = function (Products, senderAddress, receiverAddre
         for (let index = 0; index < Products.length; index++) {
             transfers.push({
                 value: 0,
-                tag: iota.utils.toTrytes("SELL"),
+                tag: "SELL",
                 address: senderAddress,
                 message: message[index]
             })
@@ -197,7 +197,7 @@ API.prototype.createTransfers = function (Products, senderAddress, receiverAddre
         for (let index = 0; index < Products.length; index++) {
             transfers.push({
                 value: 0,
-                tag: iota.utils.toTrytes("BUY"),
+                tag: "BUY",
                 address: receiverAddress,
                 message: message[index]
             })
