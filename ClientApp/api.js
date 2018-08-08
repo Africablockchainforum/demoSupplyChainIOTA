@@ -4,29 +4,20 @@ const iota = new IOTA({
     // provider: "https://nodes.devnet.thetangle.org:443"
     // provider: 'http://localhost:14700'
 })
+const fs = require("fs");
+var supplier;
 
-
-var user = [
-    {
-        "Name": "Farmer A",
-        "Seed": "CRTTXMWCNEPBNTAJFPP9ZBMZLNRDIGCTAYALRLNOFFRUUMUWDFRCBDGCVJVJ9DMODBIWXQASUUK9OERBF",
-        "Address": "Z9VFFSZYU9KNJRDZVOOCFQUJELTFHRGTLSDYTQKAKQHUJMHDXMPODLVAJQGDVLRJEDOS9ZCDIJSATXAOD"
-    },
-    {
-        "Name": "Supplier B",
-        "Seed": "IRPDAMUOULBBQTZSYADCMOACCCXGCSDBXEGI9YXPAUPEYN9PIUCMWLBEGLFZDMMSSXYXKEKB9ACMGQWVE",
-        "Address": "DAI9IABCADYZEKSIQTFKHUURLRG9ZCFSCVDWOUFACMWVMUGNYDRRTRLWQDMDJYYWGWUPYXABARXMKISRD"
-    },
-    {
-        "Name": "User C",
-        "Seed": "LQGLLEPYWLSMVHV9WQROAQOPOOAALASXCFXGQFWWLKXLPKATPEHGVFZ9J9VT9JX9QK9VHMIIBWHNGWPSJ",
-        "Address": "SHMBACOMVTEGCA9XEJYTFJOVMRKPJKDFIFPIHEZZ9CBE9WQJOZTBFY9YHMVL9WYOXNDRWILDTWLIDGXXX"
+// load supplier in server
+fs.readFile("E:\\Study and Job\\Job\\VietIS\\BlockChain\\SupplyChain\\demoSupplyChainIOTA\\db.json", (err, data) => {
+    if (err) {
+        console.log(err);
+    } else {
+        supplier = JSON.parse(data);
     }
-]
+})
 
-function API() { }
 /**
- * 
+ * method convert signatureMessageFragment in transaction to string message
  * @param {String trytes_encode} trytes 
  * @returns {String} message
  */
@@ -44,21 +35,26 @@ function toMessage(trytes) {
 }
 
 /**
- * 
+ * method get information of supplier from address
  * @param {String} address 
  * @param {function} callback 
  */
 function getInforAddress(address, callback) {
-    user.forEach(element => {
+    let status = false;
+    supplier.forEach(element => {
         if (element.Address.indexOf(address) >= 0) {
-            console.log(element.Name);
+            status = true;
+            return callback(null, element.Name);
+
         }
     });
-
+    if (!status) {
+        return callback("Supplier is undefined");
+    }
 }
 
 /**
- * 
+ * method search history transfer of a product with hash
  * @param {Hash} transactionHash 
  * @param {Array} history 
  */
@@ -70,16 +66,23 @@ function getHistory(transactionHash, history) {
         } else {
             history.push(txn[0].address);
             getInforAddress(txn[0].address, (err, data) => {
-                console.log(err, data);
+                if (err) {
+                    console.log(err);
+
+                } else {
+                    console.log(data);
+                }
             });
             let msg = JSON.parse(toMessage(txn[0].signatureMessageFragment));
-            if (msg.preHash !== "") {
+            if (iota.valid.isAddress(msg.preHash)) {
                 history = getHistory(msg.preHash, history);
             }
         }
     })
     return history;
 }
+
+function API() { }
 
 /**
  * 
@@ -95,10 +98,16 @@ API.prototype.getSupply = function (transactionHash, callback) {
         } else {
             history.push(txn[0].address);
             getInforAddress(txn[0].address, (err, data) => {
-                console.log(err, data);
+                if (err) {
+                    console.log(err);
+                } else {
+                    console.log(data);
+                }
             });
             let msg = JSON.parse(toMessage(txn[0].signatureMessageFragment));
-            history = getHistory(msg.preHash, history);
+            if (iota.valid.isAddress(msg.preHash)) {
+                history = getHistory(msg.preHash, history);
+            }
         }
     })
     return callback(null, history);

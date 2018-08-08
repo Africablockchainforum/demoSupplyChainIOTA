@@ -5,29 +5,30 @@ const iota = new IOTA({
     // provider: 'http://localhost:14700'
 
 });
-var seed = "CRTTXMWCNEPBNTAJFPP9ZBMZLNRDIGCTAYALRLNOFFRUUMUWDFRCBDGCVJVJ9DMODBIWXQASUUK9OERBF"
-var addressSell = "DAI9IABCADYZEKSIQTFKHUURLRG9ZCFSCVDWOUFACMWVMUGNYDRRTRLWQDMDJYYWGWUPYXABARXMKISRD";
-var addressBuy = "SHMBACOMVTEGCA9XEJYTFJOVMRKPJKDFIFPIHEZZ9CBE9WQJOZTBFY9YHMVL9WYOXNDRWILDTWLIDGXXX";
 
-// iota.api.getNewAddress(seed, { total: 1, security: 1, index: 1 }, (error, response) => {
-//     if (error) {
-//         console.log(error);
+var seed = "RYNKKLOVKCPLZDGLOYUHVZJUVSVCNRSGKLRUOUHORFYZFRPDGPSVCFIXPFYZAZKKDRHJVKYQUTECZIWXH"
+var addressSell = "B9FRJYOMMTTSHFKML9WVFIL9MSJ9MHYYJBFJXRNY9QPBERYGQULWCVUV9KRC9RNLXS9OVZHYCZCHOCCBY";
+var addressBuy = "JQCTJLB9RMT9MVFDBHKUCBNCIYXZKOMHUSN9XJWWURIDXTSWWD9WENJBFOEKMQLWXJUDXHCCPDDAP9Z9D";
+var addressNew=""
+iota.api.getNewAddress(seed, { total: 1, security: 1, index: 1 }, (error, response) => {
+    if (error) {
+        console.log(error);
 
-//     } else {
-//         addressInit = response;
-//         console.log(response);
+    } else {
+        addressNew = response;
+        // console.log(response);
 
-//     }
+    }
 
-// })
+})
 
 var product = {
-    "name": "Xoai",
-    "amount": "30"
+    "name": "Cam",
+    "amount": "1000"
 }
 
 var Products = [{
-    "preHash": "MPAOPYN9FUQTSYQAIXDBRE9QIKOPQXVGUDIRAGOHTCRTFDUPKGEKKNJVLEPTXSDDCKONDNSSJSWI9I999",
+    "preHash": "RNWPIOF9RCXRPLODGHAWGBFMJEMUEUWIDF9IOFEKCQTNHGZJWCFJGIRKYZITNDBFWQPZXVHGIDKVXY999",
     "product": product
 }];
 
@@ -38,19 +39,33 @@ var msg = {
     "product": Products[0].product,
     "response": responseData
 }
-var balance = ["MPAOPYN9FUQTSYQAIXDBRE9QIKOPQXVGUDIRAGOHTCRTFDUPKGEKKNJVLEPTXSDDCKONDNSSJSWI9I999"]
-var transfer = [{
+var balance = {
+    "RNWPIOF9RCXRPLODGHAWGBFMJEMUEUWIDF9IOFEKCQTNHGZJWCFJGIRKYZITNDBFWQPZXVHGIDKVXY999":2000,
+    "UPBHAWATJFVXFRMJHDPYQJMAKP9QLMGJUULRRJLITHXRULGICNHECICSLJTHWMKAWDGASAWJATSUUH999":3000
+    // "RABPDVYPOI9JGIHWCHLLJP9NALPXFRRVXHGPHMKYUKPMKDRHPGJBAI9KOQ9HKYDGXJOERTLCGHLCLC999":1000
+}
+var transfer = [
+    {
     value: 0,
     tag: "BALANCE",
     address: addressSell,
     message: iota.utils.toTrytes(JSON.stringify(balance))
-}
-,{
+},
+// {
+//     value: 0,
+//     tag: "BALANCE",
+//     address: addressBuy,
+//     message: iota.utils.toTrytes(JSON.stringify(balance))
+// }
+// ,
+{
     value: 0,
     tag: "SELL",
     address: addressSell,
     message: iota.utils.toTrytes(JSON.stringify(msg))
-},{
+}
+,
+{
     value: 0,
     tag: "BUY",
     address: addressBuy,
@@ -62,9 +77,10 @@ var transfer = [{
     
 // })
 iota.api.sendTransfer(seed, 3, 9, transfer, (error, data) => {
-    console.log(data);
+    console.log(error,data);
 })
 // iota.api.findTransactionObjects({addresses:[addressIn],tags:["SELL"]},(error,txn)=>{
 //     console.log(error,txn);
     
 // })
+
