@@ -11,13 +11,14 @@ const minWeightMagnitude = 9;
 
 var user = [];
 //load supplier in server
-user = fs.readFileSync("E:\\Study and Job\\Job\\VietIS\\BlockChain\\SupplyChain\\demoSupplyChainIOTA\\db.json")
+user = fs.readFileSync("../db.json");
 user = JSON.parse(user);
 /**
  * method convert from {trytes-code} trytes to {string} message
  * @param {String trytes_encode} trytes 
  * @returns {Object} object in message
  */
+
 function getObjectPromise(trytes) {
     return new Promise(
         function (resolve, reject) {
@@ -40,29 +41,21 @@ function getObjectPromise(trytes) {
 
 function getBalancePromise(address) {
     return new Promise(
-        function (resolve, reject) {
-            getBalance(address, (error, balance) => {
+        function (resolve, reject) {            
+            let balance;
+            iota.api.findTransactionObjects({ addresses: [address], tags: ["BALANCE"] }, (error, data) => {
                 if (error) {
                     reject(error)
                 } else {
+                    balance = getObject(data[data.length - 1].signatureMessageFragment);
                     resolve(balance);
-                }
+                }                                      
             })
         }
     )
 }
 
-function getBalance(address, callback) {
-    let balance;
-    iota.api.findTransactionObjects({ addresses: [address], tags: ["BALANCE"] }, (error, data) => {
-        if (error) {
-            return callback(error);
-        } else {
-            balance = getObject(data[data.length - 1].signatureMessageFragment);
-            return callback(null, balance);
-        }
-    })
-}
+
 function getObject(trytes) {
     temp = trytes.split("").reverse();
     var indexEnd = 0;
@@ -222,7 +215,7 @@ LIB.prototype.viewBalance = function (supplierName) {
 
 }
 
-LIB.prototype.sellProduct = function (supplierSellName, supplierBuyName, products, callback) {
+LIB.prototype.sellProduct = function (supplierSellName, receiverBuyName, products, callback) {
     // validate product
     let buyerAdd;
     let sellerAdd;
@@ -231,7 +224,7 @@ LIB.prototype.sellProduct = function (supplierSellName, supplierBuyName, product
     let balanceSeller;
     let responseData;
     let transfers = [];
-    getAddressPromise(supplierBuyName)
+    getAddressPromise(receiverBuyName)
         .then(add => {
             buyerAdd = add;
             getAddressPromise(supplierSellName)

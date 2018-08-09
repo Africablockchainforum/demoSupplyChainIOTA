@@ -19,16 +19,23 @@ var Products = [
 ];
 
 // Validate Products and send transfer
-api.sellProduct(supplierName, receiverName, Products, (err, status) => {
-    if (err) {
-        console.log(err);
-    } else {
-        console.log(status);
-        
-        if (status) {
-            console.log("Print Bill processing ...");
-        }
-    }
-});
+async function main() {
+    let buyerAdd;
+    let sellerAdd;
+    let seed
+    let newSellerAdd;
+    let balanceSeller;
+    let responseData;
+    let transfers = [];
+    let ArrTxnObj = [];
+    buyerAdd = await api.getAddressAsync(receiverName);
+    sellerAdd = await api.getAddressAsync(supplierName);
+    seed = await api.getSeedAsync(supplierName);
+    newSellerAdd = api.getNewAddress(seed);
+    balanceSeller = await getBalanceAsync(sellerAdd);
+    await sendRequestAsync(buyerAdd);
+    ArrTxnObj = await pushToTransferAsync(sellerAdd, newSellerAdd, buyerAdd, balanceSeller, products, transfers, responseData);    
+    await sendBalanceAsync(seed, ArrTxnObj);    
+}
 
-
+main();

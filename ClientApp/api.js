@@ -8,7 +8,7 @@ const fs = require("fs");
 var supplier;
 
 // load supplier in server
-fs.readFile("E:\\Study and Job\\Job\\VietIS\\BlockChain\\SupplyChain\\demoSupplyChainIOTA\\db.json", (err, data) => {
+fs.readFile("../db.json", (err, data) => {
     if (err) {
         console.log(err);
     } else {
