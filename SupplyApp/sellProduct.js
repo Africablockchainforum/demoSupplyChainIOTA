@@ -20,6 +20,12 @@ var Products = [
 
 // Validate Products and send transfer
 async function main() {
+
+    //check Product
+        //get BuyerAdd and SellerAdd
+        
+    //send transfer
+
     let buyerAdd;
     let sellerAdd;
     let seed
@@ -33,6 +39,7 @@ async function main() {
     seed = await api.getSeedAsync(supplierName);
     newSellerAdd = api.getNewAddress(seed);
     balanceSeller = await getBalanceAsync(sellerAdd);
+    //check balance
     await sendRequestAsync(buyerAdd);
     ArrTxnObj = await pushToTransferAsync(sellerAdd, newSellerAdd, buyerAdd, balanceSeller, products, transfers, responseData);    
     await sendBalanceAsync(seed, ArrTxnObj);    
