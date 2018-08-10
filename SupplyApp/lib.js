@@ -205,6 +205,7 @@ LIB.prototype.viewBalance = function (supplierName) {
 
     getBalancePromise(address)
         .then(bal => {
+            console.log(bal);
             balance = bal;
             getTxnPromise(balance)
                 .then(products => {
@@ -271,7 +272,8 @@ LIB.prototype.sellProduct = function (supplierSellName, receiverBuyName, product
                                                             } else {
                                                                 // write ArrTxnObj to file log
                                                                 console.log("Sell products successful");
-                                                                sendBalancePromise(seed, ArrTxnObj)
+                                                                console.log(buyerAdd);
+                                                                sendBalancePromise(buyerAdd, seed, ArrTxnObj)
                                                                     .then(status => {
                                                                         return callback(null, status);
                                                                     })
@@ -306,10 +308,10 @@ LIB.prototype.sellProduct = function (supplierSellName, receiverBuyName, product
             return callback(error);
         })
 }
-function sendBalancePromise(seed, arrTxn) {
+function sendBalancePromise(buyerAdd, seed, arrTxn) {
     return new Promise(
         function (resolve, reject) {
-            sendBalance(seed, arrTxn, (error, status) => {
+            sendBalance(buyerAdd, seed, arrTxn, (error, status) => {
                 if (error) {
                     reject(error)
                 } else {
@@ -349,12 +351,37 @@ function sendBalance(buyerAdd, seed, arrTxn, callback) {
                 }
             })
         })
+        .catch( () =>{
+            arrTxn.forEach(txn => {
+                let tag = iota.utils.fromTrytes(txn.tag);
+                if (tag.indexOf("BUY") >= 0) {
+                    let pro = getObject(txn.signatureMessageFragment);
+                    balanceBuyer[txn.hash] = pro.amount;
+                }
+            });
+            transfers2.push({
+                value: 0,
+                tag: "BALANCE",
+                address: buyerAdd,
+                message: iota.utils.toTrytes(JSON.stringify(balanceBuyer))
+            })
+            iota.api.sendTransfer(seed, depth, minWeightMagnitude, transfers2, (error, ArrTxnObj) => {
+                if (error) {
+                    return callback(error);
+                } else {
+                    // write ArrTxnObj to file log
+                    console.log("Sell products done");
+                    return callback(null, true);
+                }
+            })
+        })
 
 
 
 }
 
 function pushToTransfersPromise(sellerAdd, newSellerAdd, buyerAdd, balanceSeller, products, transfers, responseData) {
+    transfers = [];
     return new Promise(
         function (resolve, reject) {
             try {

@@ -6,7 +6,7 @@ const api = new API();
 // Init
 const name = "Farmer A0"
 
-
+// lib.viewBalance(name);
 
 async function main (){
     console.log(name);

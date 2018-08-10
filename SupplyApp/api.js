@@ -16,21 +16,74 @@ user = JSON.parse(user);
 
 function API() {}
 
-API.prototype.getAddressAsync = async function(name){
+/**
+ * method get address of supplier from name
+ * @param {String} supplierName
+ * @returns {String tryte-code} address
+ */
+API.prototype.getAddressAsync = async function(supplierName){
+
 };  
+
+/**
+ * method get last Transaction have tag is BALANCE and read message
+ * @param {String tryte-code} address
+ * @return {Object} Object balance of account: {txnHash:amount}
+ */
 API.prototype.getBalanceAsync = async function(address){
 };
-API.prototype.getTxnAsync = async function(bal){
-};    
+
+/**
+ * Browse through Object balance by key (address) and get infor transaction by address
+ * @param {Object} balance {txnHash:amount}
+ * @returns {Array Object} 
+ */
+API.prototype.getTxnAsync = async function(balance){
+}; 
+
+/**
+ * this method is demo, in fact, do not use it, seed must be save in local
+ * method get seed of supplier from name
+ * @param {String} supplierName
+ * @returns {String tryte-code}
+ */
 API.prototype.getSeedAsync = async function(supplierName){
 };
+
+/**
+ * method create new address by seed
+ * @param {String tryte-code} seed 
+ * @returns {String tryte-code} address
+ */
 API.prototype.getNewAddress = async function(seed){
-};    
+};
+
+/**
+ * method send to Buyer a request to confirm about product
+ * @param {String tryte-code} buyerAdd address of buyer
+ * @returns {Boolean} true if Buyer confirm other is false
+ */
 API.prototype.sendRequestAsync = async function(buyerAdd){
 };
-API.prototype.pushToTransferAsync = async function(sellerAdd, newSellerAdd, buyerAdd, balanceSeller, products, transfers, responseData){
+
+/**
+ * method create new transfer with product and balance
+ * @param {String tryte-code} sellerAdd Address of Seller
+ * @param {String tryte-code} newSellerAdd new Address of Seller to send transfer and never reuses
+ * @param {String tryte-code} buyerAdd Address of Buyer
+ * @param {Object} balanceSeller {txnHash:amount}
+ * @param {Array Object} products
+ * @param {Object} responseData data or sign to varify this transaction
+ */
+API.prototype.pushToTransferAsync = async function(sellerAdd, newSellerAdd, buyerAdd, balanceSeller, products, responseData){
 };    
-API.prototype.sendBalanceAsync = async function(seed, ArrTxnObj){
+
+/**
+ * 
+ * @param {String tryte-code} seed 
+ * @param {Array Object} ArrTxnObj 
+ */
+API.prototype.sendBuyerBalanceAsync = async function(seed, ArrTxnObj){
 };    
 
 module.exports = API;
