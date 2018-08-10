@@ -1,8 +1,8 @@
-const LIB = require("./lib.js");
 const API = require("./api.js");
-const lib = new LIB();
 const api = new API();
 
+const LIB = require("./lib.js");
+const lib = new LIB();
 // Init
 const name = "Farmer A0"
 
@@ -10,10 +10,26 @@ const name = "Farmer A0"
 
 async function main (){
     console.log(name);
-    var address = await api.getAddressAsync(name);
-    var bal = await api.getBalanceAsync(address);
-    var product = await api.getTxnAsync(bal);
-    console.log(product);
+    var address;
+    var balance;
+    var product;
+    address = await api.getAddressAsync(name);
+    if(address==null){
+        console.log("Supplier is not exsit !!!");
+        return;
+    }   
+    balance = await api.getBalanceAsync(address);
+    if(balance == null){
+        console.log("Supplier have no Porduct !!!");
+        return;
+    }else{
+        var product = await api.getTxnAsync(balance);
+        if(product!==null){
+            console.log(product);
+        } else{
+            console.log("Error !!!");
+        }   
+    }         
 }
 
 main();
