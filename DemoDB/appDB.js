@@ -5,55 +5,62 @@ const iota = new IOTA({
     // provider: 'http://localhost:14700'
 
 });
-const fs = require("fs")
-// const synchr = require("synchronize");
-var seed = "MGZWCDTSBDJBVXXMXQWEDOIWIPLJIPAZPCZFTTLFHWAFTOKCONJGWURMS9UMHPHJYYIYAZAKXZFGYZXDA"
+var pro = 
+    {
+        "preHash": "RNWPIOF9RCXRPLODGHAWGBFMJEMUEUWIDF9IOFEKCQTNHGZJWCFJGIRKYZITNDBFWQPZXVHGIDKVXY999",
+        "product": {
+            "name": "Cam",
+            "amount": 1000
+        }
+    };
 
-// iota.api.getNewAddress(seed, { total: 1, security: 1, index: 1 }, (error, response) => {
-//     if (error) {
-//         console.log(error);
 
-//     } else {
-//         addressInit = response;
-//         console.log(response);
+var transfers = [];
+var sellerAdd = "B9FRJYOMMTTSHFKML9WVFIL9MSJ9MHYYJBFJXRNY9QPBERYGQULWCVUV9KRC9RNLXS9OVZHYCZCHOCCBY";
+var balance = {data: null,status:null}; balance.data ={}
+balance.data = {RNWPIOF9RCXRPLODGHAWGBFMJEMUEUWIDF9IOFEKCQTNHGZJWCFJGIRKYZITNDBFWQPZXVHGIDKVXY999 : 6000};
+balance.status = true;
+var seed = "RYNKKLOVKCPLZDGLOYUHVZJUVSVCNRSGKLRUOUHORFYZFRPDGPSVCFIXPFYZAZKKDRHJVKYQUTECZIWXH";
+const depth = 3;
+const minWeightMagnitude = 9;
+transfers.push({
+    value: 0,
+    tag: "BALANCE",
+    address: sellerAdd,
+    message: iota.utils.toTrytes(JSON.stringify(balance))
+})
 
+iota.api.sendTransfer(seed, depth, minWeightMagnitude, transfers, (error, data) => {
+    if (error) {
+        throw (error);
+    } else {
+        console.log(data);
+    }
+})
+// var da =  {RNWPIOF9RCXRPLODGHAWGBFMJEMUEUWIDF9IOFEKCQTNHGZJWCFJGIRKYZITNDBFWQPZXVHGIDKVXY999 : 5000};
+// da = balance.data;
+// // delete balance.data[pro.preHash];
+// balance.data[seed] = 700;
+// console.log(balance.data);
+var sellerSeed = "RYNKKLOVKCPLZDGLOYUHVZJUVSVCNRSGKLRUOUHORFYZFRPDGPSVCFIXPFYZAZKKDRHJVKYQUTECZIWXH";
+// iota.api.getAccountData(sellerSeed, (err, response) =>{
+//     if (err) {
+//         throw err;
+//     }else{
+//         console.log(response.addresses.length);
 //     }
-
 // })
-
-
-// function a() {
-//     let a = 0;
-  
-//     for (i = 0; i < 100000000; i++) {
-//       a++;
-//     }
-//     let data2;
-//     fs.readFile("E:\\Study and Job\\Job\\VietIS\\BlockChain\\SupplyChain\\demoSupplyChainIOTA\\db.json",(err,data)=>{
-//         data2 = data;
-//     });
-    
-//   }
-  
-//   function b() {
-//     let a = 0;
-//     let data2;
-//     fs.readFile("E:\\Study and Job\\Job\\VietIS\\BlockChain\\SupplyChain\\demoSupplyChainIOTA\\db.json",(err,data)=>{
-//         data2 = data;
-//     });
-//     for (i = 0; i < 100000000; i++) {
-//       a++;
-//     }
-    
-//   }
-  
-//   function c() {
-    
-//     console.log('sync finished!');
-//   }
-  
-//   a();
-//   b();
-//   c();
-//   console.log('This should be good');
-
+// var arr =[];
+// var a = "abc";
+// for (let index = 10; index < 1000; index++) {
+//     let obj = {abc : index}
+//     arr.push(obj);    
+// }
+// arr.forEach(element => {
+//     element[a] = parseInt(element[a]) - 9;
+//                     if (element[a] == 0) {
+//                         delete balanceSeller.data[pro.preHash];
+//                     }                                          
+//                     element[a] = 10;
+// });
+// console.log(arr)

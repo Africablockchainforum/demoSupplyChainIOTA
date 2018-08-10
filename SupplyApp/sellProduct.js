@@ -19,33 +19,66 @@ var Products = [
 ];
 
 /**
- * this function validate Products with buyer and send to network
+ * this function verify Products with buyer and send to network
  */
-async function main() {    
-    //Validate Product
+async function main(supplierName,receiverName,Products) {    
+    //Verify Products
+    // Get balance of Seller
     let sellerAdd = await api.getAddressAsync(supplierName);
-    let balanceSeller = await getBalanceAsync(sellerAdd);
+    if(sellerAdd==null){
+        console.log("Seller is not exsit !!!");
+        return;
+    }  
+    let balanceSeller = await api.getBalanceAsync(sellerAdd);
+    if(balanceSeller==null){
+        console.log(supplierName +" have no Product !!!");
+        return;
+    }
+    // Verify each Product with balance
+    Products.forEach(pro => {
+        let hash = pro.preHash;
+        try {
+            if (pro.amount > parseInt(balanceSeller.data[hash])) {
+                console.log(supplierName +" is not enough Product !!!");
+                return;
+            }
+        } catch (error) {
+            console.log("Error !!! Try again !!!");
+            return;
+        }        
+    });
     // confirm product
-    let buyerAdd = await api.getAddressAsync(receiverName);   
-    let status = await api.sendRequestAsync(buyerAdd);
+    let buyerAdd = await api.getAddressAsync(receiverName); 
+    if(buyerAdd==null){
+        console.log("Buyer is not exsit !!!");
+        return;
+    } 
+    let responseData = await api.sendRequestAsync(buyerAdd);
+    let status = responseData.status;
     if (status) {
         //send transfer             
-        let seed = await api.getSeedAsync(supplierName); // seed must be save in local -- this is demo, so save in db.
-        let newSellerAdd = api.getNewAddress(seed);    
-        let ArrTxnObj = await api.pushToTransferAsync(sellerAdd, newSellerAdd, buyerAdd, balanceSeller, Products, responseData);    
-        let status = await api.sendBuyerBalanceAsync(seed, ArrTxnObj); 
-        if (status) {
+        let seed = await api.getSeedAsync(supplierName); // seed must be save in local -- this is demo, so save in db.                 
+        let balanceBuyer = await api.getBalanceAsync(buyerAdd);        
+        if(balanceBuyer==null){
+            balanceBuyer = {data: null,status:null};
+            balanceBuyer.data={};    
+            balanceBuyer.status;                    
+        }
+        let transfers = await api.pushToTransferAsync(seed, sellerAdd, buyerAdd, balanceSeller, balanceBuyer, Products, responseData.data);        
+        let data = await api.sendTransferAsync(seed, transfers); 
+        if (data!==null) {
             // Alert messenger successful
-            Console.log("Sold Product: \n" + Products);
+            console.log("Sold Product: \n");
+            console.log(data);
         } else {
             // Alert messenger error
-            Console.log("Send Error !!!");
+            console.log("Send Error !!!");
         }        
     }
     else{
         // Alert messenger error
-        Console.log("Send request is reject !!!");
+        console.log("Send request is reject !!!");
     }           
 }
-
-main();
+console.log(Products);
+main(supplierName,receiverName,Products);

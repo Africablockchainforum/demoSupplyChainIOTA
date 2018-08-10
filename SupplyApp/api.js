@@ -69,17 +69,28 @@ API.prototype.getAddressAsync = async function (supplierName) {
  * @return {Object} Object balance of account: {txnHash:amount}
  */
 API.prototype.getBalanceAsync = async function (address) {    
+    var bal =null;
     return new Promise(
         function (resolve) {            
             iota.api.findTransactionObjects({addresses: [address],tags: ["BALANCE"]}, (error, data) => {
                 if (error) {                    
                     throw error;
-                } else {   
+                } else { 
+                    if(data.length == 0){
+                        resolve(bal);
+                    }  
                     try {
-                        getObjectPromise(data[data.length - 1].signatureMessageFragment)
-                        .then(balance=>{                                                      
-                            resolve(balance);
-                        }) 
+                        data.forEach(element => {
+                            getObjectPromise(element.signatureMessageFragment)
+                            .then(balance =>{                                                                                                                            
+                                if (balance.status == true) {                                                                                                                                               
+                                    bal = balance;                                                                                                            
+                                }
+                                if(element == data[data.length-1]){
+                                    resolve(bal);
+                                }
+                            })
+                        });                               
                     } catch (err) {
                         resolve(null);
                     }                                                                                              
@@ -95,10 +106,10 @@ API.prototype.getBalanceAsync = async function (address) {
  * @returns {Array Object} 
  */
 API.prototype.getTxnAsync = async function (balance) {
-    var product = [];    
+    var product = [];           
     return new Promise(
         function (resolve) {
-            iota.api.getTransactionsObjects(Object.keys(balance), (error, arrTxnObj) => {
+            iota.api.getTransactionsObjects(Object.keys(balance.data), (error, arrTxnObj) => {
                 if (error) {                    
                     throw error;
                 } else {                                                        
@@ -110,7 +121,7 @@ API.prototype.getTxnAsync = async function (balance) {
                             .then(object => {
                                 pro = object;
                                 hash = txn.hash;
-                                amount = balance[hash];
+                                amount = balance.data[hash];
                                 product.push({
                                     "name": pro.product.name,
                                     "amount": amount,
@@ -131,38 +142,142 @@ API.prototype.getTxnAsync = async function (balance) {
  * @param {String} supplierName
  * @returns {String tryte-code}
  */
-API.prototype.getSeedAsync = async function (supplierName) {};
-
-/**
- * method create new address by seed
- * @param {String tryte-code} seed 
- * @returns {String tryte-code} address
- */
-API.prototype.getNewAddress = async function (seed) {};
+API.prototype.getSeedAsync = async function (supplierName) {
+    return new Promise(
+        function (resolve) {            
+            user.forEach(element => {
+                if (element.Name == supplierName) {                    
+                    resolve(element.Seed)
+                }
+            });            
+        }
+    )
+};
 
 /**
  * method send to Buyer a request to confirm about product
  * @param {String tryte-code} buyerAdd address of buyer
  * @returns {Boolean} true if Buyer confirm other is false
  */
-API.prototype.sendRequestAsync = async function (buyerAdd) {};
+API.prototype.sendRequestAsync = async function (buyerAdd) {
+    let responseData = {data: null,status:null};
+    responseData.status = true;
+    responseData.data = true;
+    return responseData;
+};
 
 /**
  * method create new transfer with product and balance
+ * @param {String tryte-code} sellerSeed to create new Seller Address to send transfer and never reuse it 
  * @param {String tryte-code} sellerAdd Address of Seller
- * @param {String tryte-code} newSellerAdd new Address of Seller to send transfer and never reuses
  * @param {String tryte-code} buyerAdd Address of Buyer
  * @param {Object} balanceSeller {txnHash:amount}
+ * @param {Object} balanceBuyer {txnHash:amount}
  * @param {Array Object} products
- * @param {Object} responseData data or sign to varify this transaction
+ * @param {Object} responseData data or sign to verify this transaction
+ * @returns {Array Object}
  */
-API.prototype.pushToTransferAsync = async function (sellerAdd, newSellerAdd, buyerAdd, balanceSeller, products, responseData) {};
+API.prototype.pushToTransferAsync = async function (sellerSeed, sellerAdd, buyerAdd, balanceSeller, balanceBuyer, products, responseData) {
+    transfers = [];
+    // create new address
+    var newSellerAdd=[];
+           
+        iota.api.getNewAddress(sellerSeed, { total: 1, security: 1, index: 2 }, (error, response) => {
+            if (error) {
+                throw error;
+            } else {
+                newSellerAdd = response;
+
+            }
+        })
+       
+    return new Promise(
+        function (resolve, reject) {
+            try {
+                products.forEach(pro => {
+                    console.log(balanceSeller.data[pro.preHash]);
+                    console.log(balanceBuyer.data[pro.preHash]);
+                    console.log("ABC");
+                    balanceSeller.data[pro.preHash] = parseInt(balanceSeller.data[pro.preHash]) - pro.amount;
+                    if (balanceSeller.data[pro.preHash] == 0) {
+                        delete balanceSeller.data[pro.preHash];
+                    }                                          
+                    balanceBuyer.data[pro.preHash] = pro.amount;
+                    console.log(balanceSeller);
+                    console.log(balanceBuyer);
+                    console.log("ABC");
+                });
+                balanceSeller.status = responseData; // it is very important to verify transaction is validate
+                balanceBuyer.status = responseData; // it is very important to verify transaction is validate                
+
+                let message = [];
+
+                // create msg Object
+                for (let i = 0; i < products.length; i++) {
+                    let msg = {
+                        "preHash": products[i].preHash,
+                        "product": products[i].product,
+                        "status": responseData
+                    }
+                    message.push(iota.utils.toTrytes(JSON.stringify(msg)));
+                }
+                //push input to transfers
+                for (let index = 0; index < products.length; index++) {
+                    transfers.push({
+                        value: 0,
+                        tag: "SELL",
+                        address: newSellerAdd[0],
+                        message: message[index]
+                    })
+                }
+                //push output to transfers
+                for (let index = 0; index < products.length; index++) {
+                    transfers.push({
+                        value: 0,
+                        tag: "BUY",
+                        address: buyerAdd,
+                        message: message[index]
+                    })
+                }
+                transfers.push({
+                    value: 0,
+                    tag: "BALANCE",
+                    address: sellerAdd,
+                    message: iota.utils.toTrytes(JSON.stringify(balanceSeller))
+                })
+                
+                transfers.push({
+                    value: 0,
+                    tag: "BALANCE",
+                    address: buyerAdd,
+                    message: iota.utils.toTrytes(JSON.stringify(balanceBuyer))
+                })
+                console.log(balanceBuyer);
+                console.log(balanceSeller);
+                resolve(transfers);
+            } catch (error) {
+                reject(error);
+            }
+        })
+};
 
 /**
- * 
+ * method send transfer to network
  * @param {String tryte-code} seed 
- * @param {Array Object} ArrTxnObj 
+ * @param {Array Object} transfers 
  */
-API.prototype.sendBuyerBalanceAsync = async function (seed, ArrTxnObj) {};
+API.prototype.sendTransferAsync = async function (seed, transfers) {    
+    // return new Promise(
+    //     function (resolve) {    
+    //         iota.api.sendTransfer(seed, depth, minWeightMagnitude, transfers, (error, data) => {        
+    //             if (error) {
+    //                 throw error;
+    //             } else {
+    //                 resolve(data);
+    //             }
+    //         })
+    //     }
+    // )
+};
 
 module.exports = API;
