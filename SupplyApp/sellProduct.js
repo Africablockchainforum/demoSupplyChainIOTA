@@ -2,21 +2,24 @@ const API = require("./api.js");
 const api = new API();
 
 // Init
-var supplierName = "Farmer A0";
+var supplierName = "Farmer A0"; // CHANGE NAME OF SELLER
 
 // Prepare Transfers    
 // Get receiver
-var receiverName = "Supplier C";
+var receiverName = "Supplier C"; //CHANGE NAME OF BUYER
 // Get Products
 var Products = [
     {
-        "preHash": "LNJUMUXSBAM9KCGMEDAZYGKMGLTGXINWVWCBY9IJELBOZNIRNOUNMGNSEYSTPHQMTJOQKMZVTU9OCA999",
+        "preHash": "LNJUMUXSBAM9KCGMEDAZYGKMGLTGXINWVWCBY9IJELBOZNIRNOUNMGNSEYSTPHQMTJOQKMZVTU9OCA999", // GET PREHASH BY function viewBalance
         "product": {
             "name": "Cam",
-            "amount": 3000
+            "amount": 3000 //CHANGE AMOUNT 
         }
     }
 ];
+
+
+/*----------------------- DO NOT CHANGE ANY THING BELOW ------------------*/
 
 /**
  * this function verify Products with buyer and send to network

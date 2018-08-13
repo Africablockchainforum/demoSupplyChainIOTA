@@ -1,10 +1,10 @@
 const API = require("./api.js");
 const api = new API();
 // Init
-const name = "Farmer A1"
-// const name = "Supplier C"
+const name = "Farmer A1" // CHANGE NAME OF SUPPLIER
 
-// lib.viewBalance(name);
+
+/*----------------------- DO NOT CHANGE ANY THING BELOW ------------------*/
 
 async function main (){
     console.log(name);
