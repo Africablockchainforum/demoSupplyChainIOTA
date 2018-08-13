@@ -68,8 +68,7 @@ async function main(supplierName,receiverName,Products) {
         let data = await api.sendTransferAsync(seed, transfers); 
         if (data!==null) {
             // Alert messenger successful
-            console.log("Sold Product: \n");
-            console.log(data);
+            console.log("Sold Product: \n");            
         } else {
             // Alert messenger error
             console.log("Send Error !!!");

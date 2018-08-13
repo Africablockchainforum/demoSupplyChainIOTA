@@ -194,18 +194,12 @@ API.prototype.pushToTransferAsync = async function (sellerSeed, sellerAdd, buyer
     return new Promise(
         function (resolve, reject) {
             try {
-                products.forEach(pro => {
-                    console.log(balanceSeller.data[pro.preHash]);
-                    console.log(balanceBuyer.data[pro.preHash]);
-                    console.log("ABC");
-                    balanceSeller.data[pro.preHash] = parseInt(balanceSeller.data[pro.preHash]) - pro.amount;
+                products.forEach(pro => {                    
+                    balanceSeller.data[pro.preHash] = parseInt(balanceSeller.data[pro.preHash]) - pro.product.amount;
                     if (balanceSeller.data[pro.preHash] == 0) {
                         delete balanceSeller.data[pro.preHash];
                     }                                          
-                    balanceBuyer.data[pro.preHash] = pro.amount;
-                    console.log(balanceSeller);
-                    console.log(balanceBuyer);
-                    console.log("ABC");
+                    balanceBuyer.data[pro.preHash] = pro.product.amount;                    
                 });
                 balanceSeller.status = responseData; // it is very important to verify transaction is validate
                 balanceBuyer.status = responseData; // it is very important to verify transaction is validate                
@@ -251,9 +245,7 @@ API.prototype.pushToTransferAsync = async function (sellerSeed, sellerAdd, buyer
                     tag: "BALANCE",
                     address: buyerAdd,
                     message: iota.utils.toTrytes(JSON.stringify(balanceBuyer))
-                })
-                console.log(balanceBuyer);
-                console.log(balanceSeller);
+                })                
                 resolve(transfers);
             } catch (error) {
                 reject(error);
@@ -267,17 +259,17 @@ API.prototype.pushToTransferAsync = async function (sellerSeed, sellerAdd, buyer
  * @param {Array Object} transfers 
  */
 API.prototype.sendTransferAsync = async function (seed, transfers) {    
-    // return new Promise(
-    //     function (resolve) {    
-    //         iota.api.sendTransfer(seed, depth, minWeightMagnitude, transfers, (error, data) => {        
-    //             if (error) {
-    //                 throw error;
-    //             } else {
-    //                 resolve(data);
-    //             }
-    //         })
-    //     }
-    // )
+    return new Promise(
+        function (resolve) {    
+            iota.api.sendTransfer(seed, depth, minWeightMagnitude, transfers, (error, data) => {        
+                if (error) {
+                    throw error;
+                } else {
+                    resolve(data);
+                }
+            })
+        }
+    )
 };
 
 module.exports = API;
