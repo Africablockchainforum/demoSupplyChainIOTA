@@ -6,14 +6,14 @@ var supplierName = "Farmer A0";
 
 // Prepare Transfers    
 // Get receiver
-var receiverName = "Supplier B";
+var receiverName = "Supplier C";
 // Get Products
 var Products = [
     {
-        "preHash": "RNWPIOF9RCXRPLODGHAWGBFMJEMUEUWIDF9IOFEKCQTNHGZJWCFJGIRKYZITNDBFWQPZXVHGIDKVXY999",
+        "preHash": "LNJUMUXSBAM9KCGMEDAZYGKMGLTGXINWVWCBY9IJELBOZNIRNOUNMGNSEYSTPHQMTJOQKMZVTU9OCA999",
         "product": {
             "name": "Cam",
-            "amount": 5
+            "amount": 3000
         }
     }
 ];
@@ -35,18 +35,26 @@ async function main(supplierName,receiverName,Products) {
         return;
     }
     // Verify each Product with balance
+    var checkBalance = true;    
     Products.forEach(pro => {
         let hash = pro.preHash;
-        try {
-            if (pro.amount > parseInt(balanceSeller.data[hash])) {
+        if(!!!balanceSeller.data[hash]){
+            console.log(supplierName +" have no Product: "+pro.product.name+" !!!");
+            checkBalance = false;;
+        }
+        try {            
+            if (pro.product.amount > parseInt(balanceSeller.data[hash])) {
                 console.log(supplierName +" is not enough Product !!!");
-                return;
+                checkBalance = false;;
             }
         } catch (error) {
             console.log("Error !!! Try again !!!");
-            return;
+            checkBalance = false;;
         }        
     });
+    if(!checkBalance) {
+        return;
+    }
     // confirm product
     let buyerAdd = await api.getAddressAsync(receiverName); 
     if(buyerAdd==null){
