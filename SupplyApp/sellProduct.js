@@ -13,7 +13,7 @@ var Products = [
         "preHash": "RNWPIOF9RCXRPLODGHAWGBFMJEMUEUWIDF9IOFEKCQTNHGZJWCFJGIRKYZITNDBFWQPZXVHGIDKVXY999",
         "product": {
             "name": "Cam",
-            "amount": 1000
+            "amount": 5
         }
     }
 ];
@@ -64,11 +64,11 @@ async function main(supplierName,receiverName,Products) {
             balanceBuyer.data={};    
             balanceBuyer.status;                    
         }
-        let transfers = await api.pushToTransferAsync(seed, sellerAdd, buyerAdd, balanceSeller, balanceBuyer, Products, responseData.data);        
-        let data = await api.sendTransferAsync(seed, transfers); 
+        let transfers = await api.pushToTransferAsync(seed, sellerAdd, buyerAdd, balanceSeller, Products, responseData.data);        
+        let data = await api.sendTransferAsync(seed, buyerAdd, transfers, balanceBuyer, responseData.data); 
         if (data!==null) {
             // Alert messenger successful
-            console.log("Sold Product: \n");            
+            console.log("Sold Product Successful \n");            
         } else {
             // Alert messenger error
             console.log("Send Error !!!");

@@ -79,15 +79,19 @@ API.prototype.getBalanceAsync = async function (address) {
                     if(data.length == 0){
                         resolve(bal);
                     }  
-                    try {
+                    let timeMax = 0;
+                    try{
                         data.forEach(element => {
                             getObjectPromise(element.signatureMessageFragment)
-                            .then(balance =>{                                                                                                                            
-                                if (balance.status == true) {                                                                                                                                               
-                                    bal = balance;                                                                                                            
+                            .then(balance =>{                                                                                                                                                            
+                                if (balance.status == true) {                                       
+                                    if(element.timestamp>timeMax){                                        
+                                        bal = balance;
+                                        timeMax = element.timestamp;
+                                    }                                                                                                                                                                                                                                                                                            
                                 }
                                 if(element == data[data.length-1]){
-                                    resolve(bal);
+                                    resolve(bal);                                    
                                 }
                             })
                         });                               
@@ -106,7 +110,7 @@ API.prototype.getBalanceAsync = async function (address) {
  * @returns {Array Object} 
  */
 API.prototype.getTxnAsync = async function (balance) {
-    var product = [];           
+    var product = [];               
     return new Promise(
         function (resolve) {
             iota.api.getTransactionsObjects(Object.keys(balance.data), (error, arrTxnObj) => {
@@ -172,13 +176,12 @@ API.prototype.sendRequestAsync = async function (buyerAdd) {
  * @param {String tryte-code} sellerAdd Address of Seller
  * @param {String tryte-code} buyerAdd Address of Buyer
  * @param {Object} balanceSeller {txnHash:amount}
- * @param {Object} balanceBuyer {txnHash:amount}
  * @param {Array Object} products
  * @param {Object} responseData data or sign to verify this transaction
  * @returns {Array Object}
  */
-API.prototype.pushToTransferAsync = async function (sellerSeed, sellerAdd, buyerAdd, balanceSeller, balanceBuyer, products, responseData) {
-    transfers = [];
+API.prototype.pushToTransferAsync = async function (sellerSeed, sellerAdd, buyerAdd, balanceSeller, products, responseData) {
+    let transfers = [];
     // create new address
     var newSellerAdd=[];
            
@@ -198,11 +201,9 @@ API.prototype.pushToTransferAsync = async function (sellerSeed, sellerAdd, buyer
                     balanceSeller.data[pro.preHash] = parseInt(balanceSeller.data[pro.preHash]) - pro.product.amount;
                     if (balanceSeller.data[pro.preHash] == 0) {
                         delete balanceSeller.data[pro.preHash];
-                    }                                          
-                    balanceBuyer.data[pro.preHash] = pro.product.amount;                    
+                    }                                                                                
                 });
-                balanceSeller.status = responseData; // it is very important to verify transaction is validate
-                balanceBuyer.status = responseData; // it is very important to verify transaction is validate                
+                balanceSeller.status = responseData; // it is very important to verify transaction is validate                
 
                 let message = [];
 
@@ -233,19 +234,13 @@ API.prototype.pushToTransferAsync = async function (sellerSeed, sellerAdd, buyer
                         message: message[index]
                     })
                 }
+                // push balanceSeller to transfers
                 transfers.push({
                     value: 0,
                     tag: "BALANCE",
                     address: sellerAdd,
                     message: iota.utils.toTrytes(JSON.stringify(balanceSeller))
-                })
-                
-                transfers.push({
-                    value: 0,
-                    tag: "BALANCE",
-                    address: buyerAdd,
-                    message: iota.utils.toTrytes(JSON.stringify(balanceBuyer))
-                })                
+                })                                                
                 resolve(transfers);
             } catch (error) {
                 reject(error);
@@ -256,16 +251,46 @@ API.prototype.pushToTransferAsync = async function (sellerSeed, sellerAdd, buyer
 /**
  * method send transfer to network
  * @param {String tryte-code} seed 
+ * @param {Object} balanceBuyer {txnHash:amount}
  * @param {Array Object} transfers 
  */
-API.prototype.sendTransferAsync = async function (seed, transfers) {    
+API.prototype.sendTransferAsync = async function (seed, buyerAdd, transfers, balanceBuyer, responseData) {        
     return new Promise(
         function (resolve) {    
-            iota.api.sendTransfer(seed, depth, minWeightMagnitude, transfers, (error, data) => {        
+            iota.api.sendTransfer(seed, depth, minWeightMagnitude, transfers, (error, txn) => {        
                 if (error) {
                     throw error;
-                } else {
-                    resolve(data);
+                } else {                    
+                    // create Balance of Buyer and send to network
+                    // create Balance
+                    let transfersBuyer = [];
+                    balanceBuyer.status = responseData; // it is very important to verify transaction is validate                                    
+                    txn.forEach(element => {                                           
+                        if(element.tag.toString().indexOf("BUY")>=0){
+                            getObjectPromise(element.signatureMessageFragment)
+                            .then(
+                                function (obj){                                    
+                                    balanceBuyer.data[element.hash] = obj.product.amount;                                      
+                                    if(element == txn[txn.length-2]){                                                                
+                                        transfersBuyer.push({
+                                            value: 0,
+                                            tag: "BALANCE",
+                                            address: buyerAdd,
+                                            message: iota.utils.toTrytes(JSON.stringify(balanceBuyer))
+                                        })
+                                        //sendto network                                        
+                                        iota.api.sendTransfer(seed, depth, minWeightMagnitude, transfersBuyer, (error, dataBuyer) =>{
+                                            if (error) {
+                                                throw error;
+                                            } else {
+                                                resolve(dataBuyer);
+                                            }
+                                        })                                            
+                                    }                                                                    
+                                }                                
+                            )                            
+                        }                        
+                    });                       
                 }
             })
         }

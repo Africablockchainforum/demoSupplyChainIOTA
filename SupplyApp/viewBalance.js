@@ -1,11 +1,8 @@
 const API = require("./api.js");
 const api = new API();
-
-const LIB = require("./lib.js");
-const lib = new LIB();
 // Init
-const name = "Farmer A0"
-// const name = "Supplier B"
+// const name = "Farmer A0"
+const name = "Supplier B"
 
 // lib.viewBalance(name);
 
