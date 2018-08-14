@@ -2,18 +2,18 @@ const API = require("./api.js");
 const api = new API();
 
 // Init
-var supplierName = "Farmer A0"; // CHANGE NAME OF SELLER
+var supplierName = "Supplier B"; // CHANGE NAME OF SELLER
 
 // Prepare Transfers    
 // Get receiver
-var receiverName = "Supplier C"; //CHANGE NAME OF BUYER
+var receiverName = "Supplier D"; //CHANGE NAME OF BUYER
 // Get Products
 var Products = [
     {
-        "preHash": "LNJUMUXSBAM9KCGMEDAZYGKMGLTGXINWVWCBY9IJELBOZNIRNOUNMGNSEYSTPHQMTJOQKMZVTU9OCA999", // GET PREHASH BY function viewBalance
+        "preHash": "HWLEWTQCMTQELJJ9BBNDKIH9IGXQLOQZOBYYMJRTBVONZUXQNYQHRHQJWBTPDIZYLVEMVZNVDREVPI999", // GET PREHASH BY function viewBalance
         "product": {
-            "name": "Cam",
-            "amount": 3000 //CHANGE AMOUNT 
+            "name": "Xoai", //CHANGE NAME
+            "amount": 100 //CHANGE AMOUNT 
         }
     }
 ];
@@ -90,5 +90,6 @@ async function main(supplierName,receiverName,Products) {
         console.log("Send request is reject !!!");
     }           
 }
+console.log("From "+supplierName+" To " + receiverName + ":")
 console.log(Products);
 main(supplierName,receiverName,Products);

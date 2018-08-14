@@ -1,7 +1,7 @@
 const API = require("./api.js");
 const api = new API();
 // Init
-const name = "Farmer A1" // CHANGE NAME OF SUPPLIER
+const name = "Supplier D" // CHANGE NAME OF SUPPLIER
 
 
 /*----------------------- DO NOT CHANGE ANY THING BELOW ------------------*/
